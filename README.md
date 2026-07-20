@@ -52,7 +52,7 @@ This project is built incrementally, with a strong emphasis on understanding cor
 
 ```bash
 # Clone the repository
-git clone <your-repo-url>
+git clone <https://github.com/krishnavmishra010100/TEAM-PULSE.git>
 cd teampulse
 
 # Install dependencies
