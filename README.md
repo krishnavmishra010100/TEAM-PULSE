@@ -28,13 +28,18 @@ This project is built incrementally, with a strong emphasis on understanding cor
 - Verified end-to-end: organization creation → admin user creation → successful login → valid JWT returned
 - Manually tested all flows via Postman
 
+- ### Phase 3: Organization Joining & Route Protection
+- Built `POST /join-org` — allows a new user to join an existing organization using its unique invite code, automatically assigned the `MEMBER` role
+- Implemented `authMiddleware` — verifies JWT tokens and protects routes from unauthenticated access
+- Verified multi-user, multi-role flow: two users can exist within the same organization with different roles (Admin and Member), and both can independently log in and receive valid tokens
+
+All flows manually tested end-to-end via Postman at each stage.
+
 ## 🔜 Upcoming Phases
 
-- `POST /join-org` — join an existing organization via invite code (Member role)
-- JWT-based route protection middleware
 - Status update CRUD routes (`POST /updates`, `GET /updates`, `PUT /updates/:id`, `DELETE /updates/:id`)
-- Multi-tenant data isolation verification (cross-organization data leak testing)
-- Role-based access control on sensitive routes
+- Multi-tenant data isolation verification (cross-organization data leak testing with a second organization)
+- Role-based access control on sensitive routes (403 handling for unauthorized roles)
 - Admin-only team management (`GET /team`, role updates, member removal)
 
 ## 🛠️ Tech Stack
