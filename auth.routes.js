@@ -1,20 +1,19 @@
 const express = require('express');
 const router = express.Router();
-const { registerOrganization, loginUser } = require('./auth.controller');
-// 1️⃣ Fix: Destructure 'authenticateToken' matching the export name
+
+// Import joinOrg alongside registerOrganization and loginUser
+const { registerOrganization, loginUser, joinOrg } = require('./auth.controller');
 const { authenticateToken } = require('./auth.middleware');
 
-// Public Routes
-router.post('/signup', registerOrganization);
+// Public Auth Routes
+router.post('/signup-org', registerOrganization);
+router.post('/signup', registerOrganization); // Supports both /signup and /signup-org
 router.post('/login', loginUser);
+router.post('/join-org', joinOrg); 
 
-// Protected Route
-// 2️⃣ Fix: Use 'authenticateToken' here
+// Protected Route Test
 router.get('/me', authenticateToken, (req, res) => {
-  res.json({
-    message: "Access granted! You are authenticated.",
-    user: req.user
-  });
+  res.json({ message: "Access granted!", user: req.user });
 });
 
 module.exports = router;
