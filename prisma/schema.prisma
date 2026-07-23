@@ -12,6 +12,7 @@ model Organization {
   name      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  inviteCode String   @unique @default(uuid()) // Make sure inviteCode exists!
   users     User[]
 }
 
@@ -20,6 +21,7 @@ model User {
   email          String        @unique
   password       String
   name           String
+  role           String       @default("MEMBER") // <-- MUST BE HERE
   organizationId String
   organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   statusUpdates  StatusUpdate[]

@@ -34,7 +34,7 @@ const registerOrganization = async (req, res, next) => {
             name: name || "Admin",
             email,
             password: hashedPassword,
-            role: "ADMIN",
+            role: "ADMIN"
           },
         },
       },
@@ -48,12 +48,16 @@ const registerOrganization = async (req, res, next) => {
       data: {
         orgName: org.name,
         email: adminUser.email,
-        inviteCode: org.inviteCode // Returns invite code in Postman!
+        inviteCode: org.inviteCode
       }
     });
 
   } catch (error) {
-    next(error);
+    console.error("SIGNUP ORG ERROR:", error);
+    return res.status(500).json({
+      message: "Internal server error",
+      error: error.message
+    });
   }
 };
 
@@ -85,7 +89,7 @@ const loginUser = async (req, res, next) => {
     const payload = {
       userId: user.id,
       role: user.role,
-      orgId: user.orgId
+      orgId: user.organizationId || user.orgId
     };
 
     // 5. Sign JWT token
@@ -101,7 +105,11 @@ const loginUser = async (req, res, next) => {
     });
 
   } catch (error) {
-    next(error);
+    console.error("LOGIN ERROR:", error);
+    return res.status(500).json({
+      message: "Internal server error",
+      error: error.message
+    });
   }
 };
 
@@ -112,10 +120,12 @@ const joinOrg = async (req, res, next) => {
   try {
     const { inviteCode, name, email, password } = req.body;
 
+    // 1. Basic validation
     if (!inviteCode || !email || !password) {
       return res.status(400).json({ message: "Invite code, email, and password are required." });
     }
 
+    // 2. Check if organization exists via invite code
     const organization = await prisma.organization.findUnique({
       where: { inviteCode }
     });
@@ -124,21 +134,26 @@ const joinOrg = async (req, res, next) => {
       return res.status(404).json({ message: "Invalid invite code." });
     }
 
+    // 3. Check if user already exists
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
       return res.status(400).json({ message: "User with this email already exists." });
     }
 
+    // 4. Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    // 5. Create new Member user tied to the organization via relation connect
     const newUser = await prisma.user.create({
       data: {
         name: name || "Member",
         email,
         password: hashedPassword,
         role: "MEMBER",
-        orgId: organization.id
+        organization: {
+          connect: { id: organization.id }
+        }
       }
     });
 
@@ -148,12 +163,16 @@ const joinOrg = async (req, res, next) => {
         id: newUser.id,
         email: newUser.email,
         role: newUser.role,
-        orgId: newUser.orgId
+        organizationId: organization.id
       }
     });
 
   } catch (error) {
-    next(error);
+    console.error("JOIN ORG ERROR:", error);
+    return res.status(500).json({
+      message: "Internal server error",
+      error: error.message
+    });
   }
 };
 
