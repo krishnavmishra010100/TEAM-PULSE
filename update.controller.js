@@ -6,9 +6,7 @@ const createUpdate = async (req, res) => {
   try {
     const { content } = req.body;
 
-    console.log("USER FROM TOKEN:", req.user);
-
-    // Extract user ID and Organization ID from token payload
+    // Extract user details from authenticated request token
     const userId = req.user?.id || req.user?.userId || req.user?.sub;
     const organizationId = req.user?.organizationId || req.user?.orgId;
 
@@ -20,8 +18,7 @@ const createUpdate = async (req, res) => {
 
     if (!userId) {
       return res.status(400).json({
-        message: "User ID missing from token.",
-        user: req.user
+        message: "User ID missing from authentication token."
       });
     }
 
@@ -31,7 +28,7 @@ const createUpdate = async (req, res) => {
       });
     }
 
-    // Create status update linked via userId
+    // Create status update linked to user
     const newUpdate = await prisma.statusUpdate.create({
       data: {
         content: content.trim(),
@@ -56,7 +53,6 @@ const createUpdate = async (req, res) => {
 
   } catch (error) {
     console.error("Error creating status update:", error);
-
     return res.status(500).json({
       message: "Server error while creating status update.",
       error: error.message
@@ -75,7 +71,7 @@ const getOrgUpdates = async (req, res) => {
       });
     }
 
-    // Fetch all updates for users within the same organization
+    // Fetch updates for users within the same organization only
     const updates = await prisma.statusUpdate.findMany({
       where: {
         user: {
@@ -99,7 +95,6 @@ const getOrgUpdates = async (req, res) => {
 
   } catch (error) {
     console.error("Error fetching status updates:", error);
-
     return res.status(500).json({
       message: "Server error while fetching status updates.",
       error: error.message
@@ -129,7 +124,7 @@ const updateUpdate = async (req, res) => {
 
     // Ownership check: Only the author can edit their own status update
     if (existingUpdate.userId !== userId) {
-      return res.status(403).json({ message: " You can only edit your own status updates." });
+      return res.status(403).json({ message: "Forbidden: You can only edit your own status updates." });
     }
 
     const updated = await prisma.statusUpdate.update({
@@ -150,7 +145,7 @@ const updateUpdate = async (req, res) => {
   }
 };
 
-// DELETE /api/updates/:id - Delete status update
+// DELETE /api/updates/:id - Delete status update (Owner OR Admin in same Org)
 const deleteUpdate = async (req, res) => {
   try {
     const { id } = req.params;
@@ -167,13 +162,15 @@ const deleteUpdate = async (req, res) => {
       return res.status(404).json({ message: "Status update not found." });
     }
 
-    // Permission check: User owns post OR user is ADMIN in the same organization
+    // Check 1: User owns the post
     const isOwner = existingUpdate.userId === userId;
+
+    // Check 2: User is an ADMIN in the same organization
     const isAdminInSameOrg =
       userRole === 'ADMIN' && existingUpdate.user.organizationId === organizationId;
 
     if (!isOwner && !isAdminInSameOrg) {
-      return res.status(403).json({ message: " Unauthorized to delete this status update." });
+      return res.status(403).json({ message: "Forbidden: You are not authorized to delete this status update." });
     }
 
     await prisma.statusUpdate.delete({
