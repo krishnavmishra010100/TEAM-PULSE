@@ -1,8 +1,8 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-// GET /api/org/members - Fetch all members in the current user's org
-exports.getMembers = async (req, res, next) => {
+// GET /api/org/team OR /api/org/members - Fetch all members in the current user's org
+exports.getMembers = async (req, res) => {
   try {
     const orgId = req.user?.organizationId || req.user?.orgId;
 
@@ -33,7 +33,7 @@ exports.getMembers = async (req, res, next) => {
 };
 
 // POST /api/org/invite - Add/Invite a new user or update existing user's org
-exports.inviteMember = async (req, res, next) => {
+exports.inviteMember = async (req, res) => {
   try {
     const { email, role = 'MEMBER' } = req.body;
     const orgId = req.user?.organizationId || req.user?.orgId;
