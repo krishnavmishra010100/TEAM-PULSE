@@ -41,11 +41,48 @@ This project is built incrementally, with a strong emphasis on understanding cor
 - Verified multi-tenant feed isolation via Postman, ensuring updates appear correctly within shared organization feeds 
 - All flows manually tested end-to-end via Postman at each stage.
 
-## 🔜 Upcoming Phases
+### Phase 5: Multi-Tenancy Data Isolation & Status Management
+* Verified **Multi-Tenant Data Isolation**: Created a secondary Organization (Org B) with its own Admin account and confirmed that querying `GET /api/updates` under Org B returned zero status updates from Org A, proving complete multi-tenant tenant isolation.
+* Built `PUT /api/updates/:id` — allows users to update and edit their own status updates.
+* Built `DELETE /api/updates/:id` — allows users to delete their own status updates.
+* Added data ownership checks inside update and delete routes to prevent non-owner users from modifying or removing another member's post.
 
-- Multi-tenant data isolation verification (cross-organization data leak testing with a second organization)
-- Role-based access control on sensitive routes (403 handling for unauthorized roles)
-- Admin-only team management (`GET /team`, role updates, member removal)
+### Phase 6: Role-Based Access Control (RBAC) & Enhanced Permissions
+* Created `roleMiddleware` (`requireAdmin`) to enforce route-level authorization based on the authenticated user's JWT role claim.
+* Updated `DELETE /api/updates/:id` with role-based logic: Admins can delete any status update within their organization, while non-admin members can only delete their own updates.
+* Built `GET /api/org/team` (and `/api/org/members`) — an Admin-only endpoint that returns a list of all team members belonging to the Admin's organization.
+* Verified RBAC enforcement via Postman: confirmed regular `MEMBER` accounts receive a `403 Forbidden` response when attempting to access Admin-only routes.
+
+### Phase 7: Team Management & Project Polish
+* Built `PUT /api/org/team/:userId/role` — allows Admins to update a team member's role (e.g., upgrading a `MEMBER` to `ADMIN`).
+* Built `DELETE /api/org/team/:userId` — allows Admins to remove a member from the organization, safely detaching their organization association while preventing self-removal.
+* Handled edge cases including payload normalization (`organizationId` vs `orgId`, `userId` vs `id`) and error handling for missing/unauthorized users.
+* Completed full end-to-end testing across all API routes using Postman with both Admin and Member JWT tokens. 
+
+---
+
+## 🎯 Project Status & Complete API Reference
+
+**Status:** `Completed (100%)` — All core features, multi-tenancy isolation, RBAC permissions, and team management routes are fully implemented and verified.
+
+### 🔌 API Endpoints Summary
+
+#### 🔑 Authentication & Onboarding
+* `POST /api/auth/signup` — Create a new Organization & initial Admin account
+* `POST /api/auth/login` — Authenticate user credentials & receive JWT token
+* `POST /api/auth/join-org` — Join an existing Organization using an invite code
+
+#### 📝 Status Updates (Multi-Tenant Feed)
+* `POST /api/updates` — Publish a new status update
+* `GET /api/updates` — Fetch status updates (isolated exclusively to user's org)
+* `PUT /api/updates/:id` — Edit a status update (Owner only)
+* `DELETE /api/updates/:id` — Delete a status update (Owner or Org Admin)
+
+#### 👥 Team Management & Admin (RBAC Protected)
+* `GET /api/org/team` — List all members in the organization (`Admin Only`)
+* `POST /api/org/invite` — Invite/Add an existing registered user to org (`Admin Only`)
+* `PUT /api/org/team/:userId/role` — Update a member's role (`Admin Only`)
+* `DELETE /api/org/team/:userId` — Remove a member from the organization (`Admin Only`)
 
 ## 🛠️ Tech Stack
 
@@ -58,22 +95,20 @@ This project is built incrementally, with a strong emphasis on understanding cor
 | Auth | JWT (jsonwebtoken), bcrypt |
 | API Testing | Postman |
 
-## 📦 Getting Started
+---
 
-```bash
-# Clone the repository
-git clone <https://github.com/krishnavmishra010100/TEAM-PULSE.git>
-cd teampulse
+## 🔮 Future Roadmap: AI / LLM Integration Layer
 
-# Install dependencies
-npm install
+To further enhance the multi-tenant collaboration experience in **TeamPulse**, the next major architectural evolution will introduce an intelligent **AI / LLM Integration Layer**:
 
-# Configure environment variables
-# Create a .env file in the root directory:
-# DATABASE_URL="postgresql://username:password@localhost:5432/teampulse?schema=public"
+### 🤖 Planned AI Features & Capabilities
+* **Automated Daily Standup Summaries:** Utilize LLM completion endpoints to analyze daily team status updates (`GET /api/updates`) and generate concise executive digests for Admins.
+* **Smart Sentiment & Blocker Detection:** Automatically tag updates containing critical project blockers, delay risks, or sentiment flags to notify team leads proactive.
+* **RAG-Powered Team Knowledge Base (Retrieval-Augmented Generation):** Vectorize organizational updates to allow team members to perform natural language queries over past status posts (e.g., *"What did the team accomplish regarding the auth service last week?"*).
+* **AI-Assisted Update Writer:** Offer interactive prompts to help team members summarize complex daily git commits or tasks into clean, readable status updates before posting.
 
-# Run database migrations
-npx prisma migrate dev
+### 🛡️ Multi-Tenant AI Security & Isolation
+* **Org-Scoped Context Windows:** Ensure all AI prompts and vector store queries enforce strict `organizationId` boundaries so no organization's private data or context is leaked to another tenant during model inference.
 
 # Start the server
 node index.js
