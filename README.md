@@ -97,18 +97,4 @@ This project is built incrementally, with a strong emphasis on understanding cor
 
 ---
 
-## 🔮 Future Roadmap: AI / LLM Integration Layer
 
-To further enhance the multi-tenant collaboration experience in **TeamPulse**, the next major architectural evolution will introduce an intelligent **AI / LLM Integration Layer**:
-
-### 🤖 Planned AI Features & Capabilities
-* **Automated Daily Standup Summaries:** Utilize LLM completion endpoints to analyze daily team status updates (`GET /api/updates`) and generate concise executive digests for Admins.
-* **Smart Sentiment & Blocker Detection:** Automatically tag updates containing critical project blockers, delay risks, or sentiment flags to notify team leads proactive.
-* **RAG-Powered Team Knowledge Base (Retrieval-Augmented Generation):** Vectorize organizational updates to allow team members to perform natural language queries over past status posts (e.g., *"What did the team accomplish regarding the auth service last week?"*).
-* **AI-Assisted Update Writer:** Offer interactive prompts to help team members summarize complex daily git commits or tasks into clean, readable status updates before posting.
-
-### 🛡️ Multi-Tenant AI Security & Isolation
-* **Org-Scoped Context Windows:** Ensure all AI prompts and vector store queries enforce strict `organizationId` boundaries so no organization's private data or context is leaked to another tenant during model inference.
-
-# Start the server
-node index.js
