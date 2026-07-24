@@ -1,6 +1,6 @@
 require('dotenv').config();
 const express = require('express');
-const cors = require('cors'); // 1. Added cors package
+const cors = require('cors');
 const authRoutes = require('./auth.routes');
 const orgRoutes = require('./org.routes');
 const updateRoutes = require('./update.routes');
@@ -8,14 +8,14 @@ const updateRoutes = require('./update.routes');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// 2. Enable CORS (MUST be placed before routes)
+// Enable CORS
 app.use(cors());
 
-// Body Parsing Middleware (MUST be before routes)
+// Body Parsing Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Debug Middleware: Log incoming requests and payload status
+// Debug Middleware
 app.use((req, res, next) => {
   console.log(` Incoming Request: ${req.method} ${req.url}`);
   if (['POST', 'PUT', 'PATCH'].includes(req.method)) {
@@ -24,7 +24,16 @@ app.use((req, res, next) => {
   next();
 });
 
-// Routes
+// Root Health Check Route
+app.get('/', (req, res) => {
+  res.status(200).json({
+    status: 'online',
+    message: 'TeamPulse API is up and running!',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/org', orgRoutes);
 app.use('/api/updates', updateRoutes);
