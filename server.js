@@ -1,11 +1,15 @@
 require('dotenv').config();
 const express = require('express');
+const cors = require('cors'); // 1. Added cors package
 const authRoutes = require('./auth.routes');
 const orgRoutes = require('./org.routes');
 const updateRoutes = require('./update.routes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// 2. Enable CORS (MUST be placed before routes)
+app.use(cors());
 
 // Body Parsing Middleware (MUST be before routes)
 app.use(express.json());
